@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<title>Reo graphical editor</title>
+</head>
+<body>
+<div id="header">
+	<h1>Reo graphical editor</h1>
+</div>
+<div id="container">
+	<div id="textdiv" class="column">
+		<div id="text" style="text-align: left"></div>
+		<input id="submit" type="button" value="Submit Code Changes"/><br/>
+		<input id="commentSwitch" type="checkbox" checked><label for="commentSwitch">Show geometry metadata comments</label>
+	</div>
+	<div id="canvas" class="column">
+		<canvas id="c" width="800" height="600">Please use a browser that supports canvas.</canvas>
+	</div>
+	<div id="toolbar" class="column">
+		<div class="tool" id="select"><a title="Select"><img src="img/cursor.svg" alt="Select"></a></div>
+		<div class="tool" id="split"><a title="Split nodes"><img src="img/split.svg" alt="Split nodes"></a></div>
+		<div class="tool" id="component"><a title="New component"><img src="img/component.svg" alt="New component"></a></div>
+		<a id="download"></a>
+		<input type="button" id="downloadSVG" value="Download as SVG"><br/>
+		<input type="button" id="downloadPNG" value="Download as PNG"><br/>
+		<input type="button" id="downloadTreo" value="Download as Treo"><br/>
+		<h2>Channels</h2>
+		<input type="button" id="newChannel" value="New channel"><br/>
+		<div id="channels" style="height: 42%; overflow-y: scroll"></div>
+	</div>
+</div>
+
+<div id="newChannelModal" class="modal">
+	<div class="modal-content">
+		<div class="modal-header">
+			<span class="close">&times;</span>
+			<h2>Create Channel</h2>
+		</div>
+		<div class="modal-body">
+			<textarea id="channelProperties" style="width: 90%; height: 150px;" title="Channel Properties">{}</textarea><br/>
+			<input type="button" id="createChannel" value="Create">
+		</div>
+	</div>
+</div>
+
+<script src="globalUtils.js"></script>
+<script src="app.bundle.js"></script>
+</body>
+</html>

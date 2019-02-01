@@ -1,0 +1,5 @@
+.idea/
+node_modules/
+*.log
+*.bundle.js
+editor.worker.js
