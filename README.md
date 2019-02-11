@@ -35,4 +35,4 @@ $ npm start
 Then go to localhost:8080 and have fun!
 
 ## Origin
-This repository is in continuation of the original project developed by @maarten1001.
+This repository is in continuation of the original project developed by [@maarten1001](https://github.com/maarten1001).
