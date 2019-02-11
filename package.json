@@ -3,12 +3,14 @@
 	"version": "0.1.0",
 	"scripts": {
 		"prod:build": "cross-env NODE_ENV=production webpack",
-		"dev:build": "webpack"
+		"dev:build": "webpack",
+		"start": "http-server"
 	},
 	"dependencies": {
 		"monaco-editor": "^0.15.6",
 		"antlr4": "^4.7.2",
-		"fabric": "^2.5.0"
+		"fabric": "^2.5.0",
+		"http-server": "^0.11.1"
 	},
 	"devDependencies": {
 		"cross-env": "^5.2.0",
@@ -21,6 +23,6 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": ""
+		"url": "https://github.com/ReoLanguage/reo-graphical-editor.git"
 	}
 }

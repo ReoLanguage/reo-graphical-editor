@@ -27,5 +27,9 @@ $ npm run prod:build
 
 Note: The process of minimizing will take some time.
 
-## Usage
-After building the project, open "index.html" found in the "public" directory with your desired browser.
+## Running
+After building the project, run command:
+```console
+$ npm start
+```
+Then go to localhost:8080 and have fun!
