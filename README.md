@@ -1,4 +1,4 @@
-# reo-graphical-editor
+# Reo Graphical Editor
 Web-based graphical editor for Reo language
 
 ## Build
@@ -33,3 +33,6 @@ After building the project, run command:
 $ npm start
 ```
 Then go to localhost:8080 and have fun!
+
+## Origin
+This repository is in continuation of the original project developed by @maarten1001.
