@@ -8,7 +8,7 @@ let channelTypes = require('./channels');
 monaco.languages.register({id: 'reo'});
 monaco.languages.setMonarchTokensProvider('reo', reoIMonarchLanguage.language);
 monaco.languages.setLanguageConfiguration('reo', reoIMonarchLanguage.conf);
-const codeEditor = monaco.editor.create(document.getElementById('text'), {language: 'reo'});
+const codeEditor = monaco.editor.create(document.getElementById('text'), {language: 'reo'});  // FIXME not responsive
 
 async function sourceLoader(fileName) {
 	return new Promise(function (resolve, reject) {
@@ -28,11 +28,19 @@ const listener = new ReoInterpreter.ReoListenerImpl(sourceLoader);
 listener.includeSource('default.treo');
 
 // Initialize graphical editor
-const c = document.getElementById("c"), container = document.getElementById("canvas");
+fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
+fabric.Object.prototype.objectCaching = false;
+const canvas = new fabric.Canvas('canvas', {
+	selection: false,
+	preserveObjectStacking: true,
+	backgroundColor: '#eee'
+});
+const c = document.getElementById("canvas"), container = document.getElementById("canvas-container");
 
 function resizeCanvas() {
 	c.width = container.clientWidth;
 	c.height = container.clientHeight;
+
 	// Check if the Fabric.js canvas object has been initialized
 	if (canvas) {
 		canvas.setWidth(container.clientWidth);
@@ -57,22 +65,12 @@ function resizeCanvas() {
 	}
 }
 
-document.body.onresize = function () {
-	resizeCanvas()
-};
-resizeCanvas();
+document.body.onresize = () => resizeCanvas();
 
-var canvas = new fabric.Canvas('c', {
-	selection: false,
-	preserveObjectStacking: true,
-	backgroundColor: '#eee'
-});
-fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
-fabric.Object.prototype.objectCaching = false;
-var isDown, origX, origY, origLeft, origTop, origRight, origBottom, fromBoundary;
-var mode = 'select';
-var id = '0';
-var nodes = [], channels = [], components = [];
+let isDown, origX, origY, origLeft, origTop, origRight, origBottom, fromBoundary;
+let mode = 'select';
+let id = '0';
+let nodes = [], channels = [], components = [];
 
 loadChannels();
 
@@ -148,45 +146,43 @@ function buttonClick(button) {
 	canvas.requestRenderAll()
 }
 
-document.getElementById("select").onclick = function () {
-	buttonClick(document.getElementById("select"))
-};
-document.getElementById("split").onclick = function () {
-	buttonClick(document.getElementById("split"))
-};
-document.getElementById("component").onclick = function () {
-	buttonClick(document.getElementById("component"))
-};
+document.getElementById("select").onclick = () => buttonClick(document.getElementById("select"));
+document.getElementById("split").onclick = () => buttonClick(document.getElementById("split"));
+document.getElementById("component").onclick = () => buttonClick(document.getElementById("component"));
 
-document.getElementById("downloadSVG").onclick = function () {
-	var a = document.getElementById("download");
-	a.download = "reo.svg";
-	a.href = "data:image/svg+xml;base64," + window.btoa(canvas.toSVG());
-	a.click()
-};
+/**
+ * Exports the canvas to the desired format.
+ * @param {String} [format] The format of the output image. Currently supporting "svg" (default), "png" and "treo".
+ */
+function download(format) {
+	format = format || 'svg';
 
-document.getElementById("downloadPNG").onclick = function () {
-	var a = document.getElementById("download");
-	a.download = "reo.png";
-	a.href = canvas.toDataURL("image/png");
+	const a = document.createElement('a');
+	a.download = "reo." + format;
+	switch (format) {
+		case 'png':
+			a.href = canvas.toDataURL();
+			break;
+		case 'svg':
+			a.href = "data:image/svg+xml;base64," + window.btoa(canvas.toSVG());
+			break;
+		case 'treo':
+			a.href = window.URL.createObjectURL(new Blob([codeEditor.getValue()], {type: "text/plain"}));
+			break;
+	}
 	a.click()
-};
+}
 
-document.getElementById("downloadTreo").onclick = function () {
-	var a = document.getElementById("download");
-	a.download = "reo.reo";
-	a.href = window.URL.createObjectURL(new Blob([codeEditor.getValue()], {type: "text/plain"}));
-	a.click()
-};
+document.getElementById("downloadSVG").onclick = () => download();
+document.getElementById("downloadPNG").onclick = () => download('png');
+document.getElementById("downloadTreo").onclick = () => download('treo');
 
 document.getElementById("submit").onclick = async function () {
-	ReoInterpreter.parse(codeEditor.getValue(), listener);  // FIXME code should not be collected from editor
+	ReoInterpreter.parse(codeEditor.getValue(), listener);  // FIXME code should not be collected from editor (because of the commnet switch)
 	try {
 		clearAll();
-		// console.log(listener.generateCode());
 		eval(listener.generateCode())
 	} catch (e) {
-		console.log(e);
 		alert(e)
 	}
 };
@@ -195,30 +191,23 @@ document.getElementById("commentSwitch").onclick = function () {
 	updateText()
 };
 
-var modal = document.getElementById('newChannelModal');
+// Channel defining modal
+const modal = document.getElementById('newChannelModal');
 
-document.getElementById("newChannel").onclick = function () {
-	modal.style.display = "block"
-};
-
-document.getElementsByClassName("close")[0].onclick = function () {
-	modal.style.display = "none"
-};
-
-document.getElementById("createChannel").onclick = function () {
+document.getElementById("newChannel").onclick = () => modal.style.display = "block";
+document.getElementsByClassName("close")[0].onclick = () => modal.style.display = "none";
+document.getElementById("createChannel").onclick = () => {
 	loadChannel(JSON.parse(document.getElementById("channelProperties").value));
 	modal.style.display = "none"
 };
 
-window.onclick = function (event) {
+window.onclick = event => {
 	if (event.target === modal) modal.style.display = "none"
 };
 
 // generate a new object ID
 // ID will only contain letters, i.e. z is followed by aa
-function generateId() {
-	return (id = ((parseInt(id, 36) + 1).toString(36)).replace(/[0-9]/g, 'a'))
-}
+const generateID = () => id = ((parseInt(id, 36) + 1).toString(36)).replace(/[0-9]/g, 'a');
 
 // Extend the default Fabric.js object type to include additional positional parameters
 fabric.Object.prototype.toObject = (function (toObject) {
@@ -234,7 +223,7 @@ fabric.Object.prototype.toObject = (function (toObject) {
 	}
 })(fabric.Object.prototype.toObject);
 
-var Node = fabric.util.createClass(fabric.Circle, {
+const Node = fabric.util.createClass(fabric.Circle, {
 	type: 'node',
 
 	initialize: function (options) {
@@ -246,9 +235,9 @@ var Node = fabric.util.createClass(fabric.Circle, {
 			labelOffsetX: options.labelOffsetX || 10,
 			labelOffsetY: options.labelOffsetY || -20,
 			class: 'node',
-			nodetype: 'undefined',
+			nodeType: 'undefined',
 			parent: main,
-			id: options.id || generateId()
+			id: options.id || generateID()
 		})
 	},
 
@@ -272,7 +261,7 @@ var Node = fabric.util.createClass(fabric.Circle, {
 }); // Node
 
 function createNode(left, top, name, manual) {
-	var node = new Node({
+	const node = new Node({
 		left: left,
 		top: top,
 		strokeWidth: lineStrokeWidth,
@@ -286,7 +275,7 @@ function createNode(left, top, name, manual) {
 		id: name
 	});
 
-	var label = new fabric.IText(name ? name : node.id, {
+	const label = new fabric.IText(name ? name : node.id, {
 		left: left + 10,
 		top: top - 20,
 		fontSize: 20,
@@ -301,7 +290,7 @@ function createNode(left, top, name, manual) {
 		label.object.set('id', label.text)
 	});
 
-	var selection = new fabric.Circle({
+	const selection = new fabric.Circle({
 		left: left,
 		top: top,
 		fill: splitSelected,
@@ -312,12 +301,11 @@ function createNode(left, top, name, manual) {
 	node.set('selection', selection);
 	canvas.add(selection);
 
-	fabric.Image.fromURL('img/delete.svg', function (img) {
-		var scale = (nodeFactor * 4) / img.height;
-		img.scale(scale).set({
-			left: node.left - 15,
-			top: node.top + 15,
-			class: 'delete',
+	const createAnchor = (img, cls, left, top) => {
+		img.scale(nodeFactor * 4 / img.height).set({
+			left: left,
+			top: top,
+			class: cls,
 			parent: node,
 			visible: false,
 			selectable: true,
@@ -327,27 +315,12 @@ function createNode(left, top, name, manual) {
 			lockMovementY: true,
 			hoverCursor: 'pointer'
 		});
-		node.set('delete', img);
+		node.set(cls, img);
 		canvas.add(img)
-	});
-	fabric.Image.fromURL('img/split.svg', function (img) {
-		var scale = (nodeFactor * 4) / img.height;
-		img.scale(scale).set({
-			left: node.left + 15,
-			top: node.top + 15,
-			class: 'split',
-			parent: node,
-			visible: false,
-			selectable: true,
-			hasControls: false,
-			hasBorders: false,
-			lockMovementX: true,
-			lockMovementY: true,
-			hoverCursor: 'pointer'
-		});
-		node.set({'split': img});
-		canvas.add(img)
-	});
+	};
+
+	fabric.Image.fromURL('img/delete.svg', img => createAnchor(img, 'delete', node.left - 15, node.top + 15));
+	fabric.Image.fromURL('img/split.svg', img => createAnchor(img, 'split', node.left + 15, node.top + 15));
 
 	nodes.push(node);
 	setParent(node);
@@ -383,7 +356,7 @@ function createAnchor(left, top) {
  * @returns {{class: string, parts: Array}}
  */
 function createChannel(type, node1, node2, manual) {
-	var channel, i, validChannel = false;
+	let channel, i, validChannel = false;
 	isDown = false;
 
 	for (i = 0; i < channelTypes.length; ++i)
@@ -397,16 +370,16 @@ function createChannel(type, node1, node2, manual) {
 	fabric.util.enlivenObjects(channel.parts, function (objects) {
 		channel.parts = objects;
 		completeChannelCreation(channel, node1, node2, manual)
-	})
+	}, undefined, undefined)
 } //createChannel
 
 function completeChannelCreation(channel, node1, node2, manual) {
-	var left = Math.min(node1.x, node2.x) + Math.abs(node1.x - node2.x) / 2,
-		top = Math.min(node1.y, node2.y) + Math.abs(node1.y - node2.y) / 2,
-		i, p;
+	const left = Math.min(node1.x, node2.x) + Math.abs(node1.x - node2.x) / 2,
+		top = Math.min(node1.y, node2.y) + Math.abs(node1.y - node2.y) / 2;
+	let i, p;
 
-	// Create a reference rectangle...
-	var reference = new fabric.Rect({
+	// Create a reference rectangle, ...
+	const reference = new fabric.Rect({
 		left: left,
 		top: top,
 		width: 10,
@@ -427,7 +400,7 @@ function completeChannelCreation(channel, node1, node2, manual) {
 
 	// ...a delete button...
 	fabric.Image.fromURL('img/delete.svg', function (img) {
-		var scale = (nodeFactor * 4) / img.height;
+		const scale = (nodeFactor * 4) / img.height;
 		img.scale(scale).set({
 			left: left,
 			top: top + 15,
@@ -448,8 +421,8 @@ function completeChannelCreation(channel, node1, node2, manual) {
 		});
 
 		// Wait until the image is loaded to create the relationship and add it to the channel
-		var invertedBossTransform = fabric.util.invertTransform(channel.parts[0].calcTransformMatrix());
-		img.relationship = fabric.util.multiplyTransformMatrices(invertedBossTransform, img.calcTransformMatrix());
+		const invertedBossTransform = fabric.util.invertTransform(channel.parts[0].calcTransformMatrix());
+		img.relationship = fabric.util.multiplyTransformMatrices(invertedBossTransform, img.calcTransformMatrix(), false);
 		channel.parts.push(img);
 		channel.parts[0].set('delete', img);
 		channel.delete = img;
@@ -487,10 +460,10 @@ function completeChannelCreation(channel, node1, node2, manual) {
 
 	// calculate the relation matrix between the channel component and the reference rectangle
 	// then save it as a channel component property
-	var bossTransform = channel.parts[0].calcTransformMatrix();
-	var invertedBossTransform = fabric.util.invertTransform(bossTransform);
+	const bossTransform = channel.parts[0].calcTransformMatrix();
+	const invertedBossTransform = fabric.util.invertTransform(bossTransform);
 	for (i = 1; i < channel.parts.length; ++i) {
-		channel.parts[i].relationship = fabric.util.multiplyTransformMatrices(invertedBossTransform, channel.parts[i].calcTransformMatrix());
+		channel.parts[i].relationship = fabric.util.multiplyTransformMatrices(invertedBossTransform, channel.parts[i].calcTransformMatrix(), false);
 		canvas.add(channel.parts[i])
 	}
 	channels.push(channel);
@@ -518,7 +491,7 @@ function completeChannelCreation(channel, node1, node2, manual) {
 	}
 
 	for (i = 0; i < p.channels.length; ++i)
-		updateChannel(p.channels[i])
+		updateChannel(p.channels[i]);
 	p.label.set({left: p.left + p.labelOffsetX, top: p.top + p.labelOffsetY});
 	p.label.setCoords();
 
@@ -537,19 +510,19 @@ function completeChannelCreation(channel, node1, node2, manual) {
 }
 
 function createLink(node) {
-	var clone = createNode(node.left, node.top, node.label.text);
-	var link = new fabric.Line([node.left, node.top, clone.left, clone.top], {
-		fill: 'silver',
-		stroke: 'silver',
-		strokeWidth: 1,
-		hasBorders: false,
-		hasControls: false,
-		evented: false,
-		hoverCursor: 'default',
-		originX: 'center',
-		originY: 'center',
-		nodes: [node, clone]
-	});
+	const clone = createNode(node.left, node.top, node.label.text),
+		link = new fabric.Line([node.left, node.top, clone.left, clone.top], {
+			fill: 'silver',
+			stroke: 'silver',
+			strokeWidth: 1,
+			hasBorders: false,
+			hasControls: false,
+			evented: false,
+			hoverCursor: 'default',
+			originX: 'center',
+			originY: 'center',
+			nodes: [node, clone]
+		});
 	node.link = link;
 	clone.link = link;
 	canvas.discardActiveObject(null);
@@ -578,14 +551,16 @@ function loadChannel(properties) {
 	span.appendChild(a);
 	span.appendChild(document.createElement("br"));
 	span.appendChild(document.createTextNode(properties.name));
-	span.onclick = function () {buttonClick(this)};
+	span.onclick = function () {
+		buttonClick(this)
+	};
 	document.getElementById("channels").appendChild(span)
 }
 
 /**
  * Loads predefined channels at load time
  */
-function loadChannels() {
+async function loadChannels() {
 	if (typeof Storage !== "undefined" && localStorage.getItem("channels"))
 		channelTypes = JSON.parse(localStorage.getItem("channels"));
 
@@ -594,7 +569,7 @@ function loadChannels() {
 }
 
 function calculateAngle(channel, baseAngle) {
-	var angle = 0,
+	let angle = 0,
 		x = (channel.node2.get('left') - channel.node1.get('left')),
 		y = (channel.node2.get('top') - channel.node1.get('top'));
 
@@ -612,9 +587,8 @@ function calculateAngle(channel, baseAngle) {
 // p is either a node, a channel or a component
 // if p is a component, parent should be defined
 function setParent(p, parent) {
-	var parentArray, i;
-	if (p === main)
-		return;
+	let parentArray, i;
+	if (p === main) return;
 	// if a parent is set, remove the reference to p from the parent
 	if (p.parent) {
 		switch (p.class) {
@@ -665,7 +639,7 @@ function updateNode(node, keepParent) {
 	// set node coordinates
 	node.label.setCoords();
 	node.set({labelOffsetX: node.label.left - node.left, labelOffsetY: node.label.top - node.top});
-	for (var i = nodes.length - 1; i >= 0; --i) {
+	for (let i = nodes.length - 1; i >= 0; --i) {
 		// prevent comparing the node with itself
 		if (nodes[i] === node) continue;
 		// merge nodes that overlap
@@ -696,19 +670,18 @@ function updateNodeColouring(node) {
 
 	if (source) {
 		if (sink)
-			node.set({nodetype: 'mixed', fill: nodeFillColourMixed});
+			node.set({nodeType: 'mixed', fill: nodeFillColourMixed});
 		else
-			node.set({nodetype: 'source', fill: nodeFillColourSource})
+			node.set({nodeType: 'source', fill: nodeFillColourSource})
 	} else
-		node.set({nodetype: 'sink', fill: nodeFillColourSink});
+		node.set({nodeType: 'sink', fill: nodeFillColourSink});
 	canvas.requestRenderAll()
 }
 
 function updateChannel(channel) {
-	var x1 = channel.node1.get('left'), y1 = channel.node1.get('top'),
+	const x1 = channel.node1.get('left'), y1 = channel.node1.get('top'),
 		x2 = channel.node2.get('left'), y2 = channel.node2.get('top'),
-		diffX = Math.abs(x1 - x2), diffY = Math.abs(y1 - y2),
-		i, scale;
+		diffX = Math.abs(x1 - x2), diffY = Math.abs(y1 - y2);
 
 	// update the reference rectangle
 	switch (channel.parts[0].type) {
@@ -720,8 +693,8 @@ function updateChannel(channel) {
 			});
 
 			// convert new size to scaling
-			var length = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-			scale = length / channel.parts[0].baseLength;
+			const length = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+			const scale = length / channel.parts[0].baseLength;
 			channel.parts[0].set({scaleX: scale, scaleY: scale});
 			channel.parts[0].setCoords();
 			break;
@@ -731,21 +704,16 @@ function updateChannel(channel) {
 	}
 
 	// update all channel components
-	for (i = 1; i < channel.parts.length; ++i) {
-		var o = channel.parts[i];
+	for (let i = 1; i < channel.parts.length; ++i) {
+		const o = channel.parts[i];
 		if (o.type === 'line')
 			o.set({x1: x1, y1: y1, x2: x2, y2: y2});
 		else {
 			if (!o.relationship) throw new Error("No relationship found");
-			var relationship = o.relationship;
-			var newTransform = fabric.util.multiplyTransformMatrices(channel.parts[0].calcTransformMatrix(), relationship);
+			const newTransform = fabric.util.multiplyTransformMatrices(channel.parts[0].calcTransformMatrix(), o.relationship, false);
 			let opt = fabric.util.qrDecompose(newTransform);
 			o.set({flipX: false, flipY: false});
-			o.setPositionByOrigin(
-				{x: opt.translateX, y: opt.translateY},
-				'center',
-				'center'
-			);
+			o.setPositionByOrigin(new fabric.Point(opt.translateX, opt.translateY), 'center', 'center');
 			o.set(opt);
 			if (o.scale === false) {
 				if (o.type === 'image')
@@ -844,7 +812,7 @@ function repositionParts(c) {
  * @param c - The component that is being resized
  */
 function repositionNodes(c) {
-	for (var i = 0; i < c.nodes.length; ++i) {
+	for (let i = 0; i < c.nodes.length; ++i) {
 		let node = c.nodes[i];
 		if (node.origLeft === origLeft)
 			node.set('left', c.left);
@@ -890,7 +858,7 @@ canvas.on('selection:created', function (e) {
 });
 
 canvas.on('selection:updated', function (e) {
-	var i;
+	let i;
 	for (i = 0; i < nodes.length; ++i) {
 		if (nodes[i].delete)
 			nodes[i].delete.set('visible', false);
@@ -961,7 +929,8 @@ canvas.on('mouse:out', function(e) {
 }); //mouse:out*/
 
 canvas.on('mouse:down', function (e) {
-	var pointer = canvas.getPointer(e.e), p = canvas.getActiveObject(), i, otherNode;
+	const pointer = canvas.getPointer(e.e, false), p = canvas.getActiveObject();
+	let i, otherNode;
 	isDown = true;
 	origX = pointer.x;
 	origY = pointer.y;
@@ -1032,7 +1001,7 @@ canvas.on('mouse:down', function (e) {
 				if (p.class && p.class === 'node') {
 					if (p.selection.visible === true) {
 						for (i = 0; i < p.channels.length; ++i)
-							if (p.channels[i].parts[0].fill === splitSelected) {
+							if (p.channels[i].parts[0].fill === splitSelected) {  // FIXME this works even if no channel is selected!
 								splitNode(p);
 								break
 							}
@@ -1051,11 +1020,12 @@ canvas.on('mouse:down', function (e) {
 
 canvas.on('mouse:move', function (e) {
 	if (!isDown) return;
-	var i, j, x, y, p = canvas.getActiveObject(), index = -1;
+
+	const p = canvas.getActiveObject();
 	if (!p) return;
-	var pointer = canvas.getPointer(e.e);
-	x = pointer.x;
-	y = pointer.y;
+
+	const pointer = canvas.getPointer(e.e, false);
+	let i, j, x = pointer.x, y = pointer.y, index = -1;
 	switch (p.class) {
 		case 'component':
 			if (p.status === 'drawing') {
@@ -1155,7 +1125,7 @@ canvas.on('mouse:move', function (e) {
 					}
 
 					// Move the node to the closest boundary
-					var newPosition = {};
+					const newPosition = {};
 					newPosition[changingPosition] = components[index][changingPosition] + size;
 					p.set(newPosition);
 					p.setCoords()
@@ -1180,7 +1150,7 @@ canvas.on('mouse:move', function (e) {
 
 function onMouseUp() {
 	isDown = false;
-	var p = canvas.getActiveObject();
+	const p = canvas.getActiveObject();
 	if (p) {
 		p.setCoords();
 		switch (p.class) {
@@ -1212,7 +1182,7 @@ function onMouseUp() {
 }
 
 function mergeNodes(destination, source) {
-	var j, i;
+	let j, i;
 	for (j = 0; j < source.channels.length; ++j) {
 		let loop = false;
 		if (source.channels[j].node1 === source) {
@@ -1229,12 +1199,10 @@ function mergeNodes(destination, source) {
 		}
 		if (loop) {
 			// if the source node is equal to the destination node, create a loop and update the position of all channel parts
-			var channel = source.channels[j];
-			var rect = channel.parts[0];
-			var line = channel.parts[1];
+			const channel = source.channels[j], rect = channel.parts[0], line = channel.parts[1];
 
 			// create a circle to replace the channel line
-			var curve = new fabric.Circle({
+			const curve = new fabric.Circle({
 				left: line.x1,
 				top: line.y1 - loopRadius,
 				angle: 0,
@@ -1254,7 +1222,7 @@ function mergeNodes(destination, source) {
 
 			// create a new position for all parts based on their original position
 			for (i = 2; i < channel.parts.length; ++i) {
-				var o = channel.parts[i];
+				const o = channel.parts[i];
 				if (o.referencePoint === 'node1' || o.referencePoint === 'node2' || o.referencePoint === 'middle') {
 					// calculate the distance along the straight line
 					let length = o.referenceDistance * Math.cos((rect.angle + o.referenceAngle + 180) * Math.PI / 180);
@@ -1286,10 +1254,9 @@ function mergeNodes(destination, source) {
 						referenceAngle: Math.atan2(diffY, diffX) * 180 / Math.PI + 180
 					})
 				}
-				var bossTransform = curve.calcTransformMatrix();
-				var invertedBossTransform = fabric.util.invertTransform(bossTransform);
-				var desiredTransform = fabric.util.multiplyTransformMatrices(invertedBossTransform, channel.parts[i].calcTransformMatrix());
-				channel.parts[i].relationship = desiredTransform;
+				const bossTransform = curve.calcTransformMatrix();
+				const invertedBossTransform = fabric.util.invertTransform(bossTransform);
+				channel.parts[i].relationship = fabric.util.multiplyTransformMatrices(invertedBossTransform, channel.parts[i].calcTransformMatrix(), false);
 				canvas.remove(o);
 				canvas.add(o)
 			}
@@ -1317,23 +1284,24 @@ function mergeNodes(destination, source) {
 }
 
 function prepareSplit(node) {
-	var i, j;
+	let i, j;
 	for (j = 0; j < nodes.length; ++j) {
 		if (nodes[j].selection.visible === true) {
 			nodes[j].selection.set('visible', false);
 			for (i = 0; i < nodes[j].channels.length; ++i)
-				nodes[j].channels[i].parts[0].set({fill: 'transparent', selectable: false, hoverCursor: 'default'})
+				nodes[j].channels[i].parts[0].set({fill: 'transparent', selectable: false, hoverCursor: 'default'});
 			break
 		}
 	}
 	node.selection.set('visible', true);
 	for (i = 0; i < node.channels.length; ++i)
-		node.channels[i].parts[0].set({fill: splitDeselected, selectable: true, hoverCursor: 'pointer'})
+		node.channels[i].parts[0].set({fill: splitDeselected, selectable: true, hoverCursor: 'pointer'});
 	canvas.requestRenderAll()
 }
 
-function splitNode(source) {
-	var i, destination = createNode(source.left, source.top, null, true);
+function splitNode(source) {  // FIXME works even if no channel is selected!
+	let i, otherNode;
+	const destination = createNode(source.left, source.top, null, true);
 	source.parent.nodes.push(destination);
 	for (i = 0; i < source.channels.length; ++i)
 		if (source.channels[i].parts[0].fill === splitSelected) {
@@ -1358,6 +1326,7 @@ function splitNode(source) {
 			otherNode = 'node2';
 		else
 			otherNode = 'node1';
+
 		if (!isBoundaryNode(destination.channels[i][otherNode])) {
 			fromBoundary = false;
 			break
@@ -1369,9 +1338,10 @@ function splitNode(source) {
  * Moves component p and all its objects to the top layer
  */
 function bringComponentToFront(p) {
-	var i, j, limit = components.length;
-	if (!p || p.class !== 'component')
-		return;
+	if (!p || p.class !== 'component') return;
+
+	let i, j, limit = components.length;
+
 	// Move p to the end of the array
 	for (i = 0; i < limit; ++i)
 		if (components[i] === p) {
@@ -1384,7 +1354,7 @@ function bringComponentToFront(p) {
 		}
 	// Update the other index parameters accordingly
 	for (; i < limit; ++i)
-		components[i].set('index', i)
+		components[i].set('index', i);
 	p.bringToFront();
 	p.header.bringToFront();
 	if (p.delete)
@@ -1413,7 +1383,7 @@ function bringComponentToFront(p) {
  * Moves node p and all its connected channels to the top layer
  */
 function bringNodeToFront(p) {
-	var i, j;
+	let i, j;
 	p.selection.bringToFront();
 	for (i = 0; i < p.channels.length; ++i) {
 		for (j = 1; j < p.channels[i].parts.length; ++j)
@@ -1429,7 +1399,7 @@ function bringNodeToFront(p) {
 }
 
 function deleteNode(node) {
-	var i;
+	let i;
 	// delete the connecting channels
 	for (i = node.channels.length - 1; i >= 0; --i)
 		deleteChannel(node.channels[i]);
@@ -1449,7 +1419,7 @@ function deleteNode(node) {
 }
 
 function deleteChannel(channel) {
-	var j;
+	let j;
 	// delete the channel reference from the connecting nodes
 	if (channel.node1)
 		for (j = 0; j < channel.node1.channels.length; ++j)
@@ -1493,7 +1463,7 @@ function deleteChannel(channel) {
  * recursive is for internal use only.
  */
 function deleteComponent(component, recursive) {
-	var k;
+	let k;
 	// delete underlying components
 	for (k = 0; k < component.components.length; ++k)
 		deleteComponent(component.components[k], true);
@@ -1529,7 +1499,9 @@ function compactComponent(component) {
 }
 
 function copyComponent(p) {
-	var i, c, component = createComponent(p.left + 20, p.top + 20, p.left + p.width + 20, p.top + p.height + 20, p.id);
+	createComponent(p.left + 20, p.top + 20, p.left + p.width + 20, p.top + p.height + 20, p.id);
+
+	let i, c;
 	for (i = 0; i < p.channels.length; ++i) {
 		c = p.channels[i];
 		createChannel(c.name, {x: c.node1.left + 20, y: c.node1.top + 20, name: c.node1.id}, {
@@ -1541,7 +1513,7 @@ function copyComponent(p) {
 }
 
 document.addEventListener("keydown", function (e) {
-	var p = canvas.getActiveObject();
+	const p = canvas.getActiveObject();
 	switch (e.code) {
 		case "Delete":
 			if (p)
@@ -1574,10 +1546,10 @@ document.addEventListener("keydown", function (e) {
 	}
 });
 
-function createComponent(x1, y1, x2, y2, name, manual) {
-	var width = (x2 - x1), height = (y2 - y1), left = x1, top = y1;
+function createComponent(x1, y1, x2, y2, name, manual) {  // FIXME parent component must be set for code generation
+	const width = (x2 - x1), height = (y2 - y1), left = x1, top = y1;
 
-	var component = new fabric.Rect({
+	const component = new fabric.Rect({
 		left: left,
 		top: top,
 		width: width,
@@ -1596,17 +1568,16 @@ function createComponent(x1, y1, x2, y2, name, manual) {
 		nodes: [],
 		channels: [],
 		components: [],
-		id: name ? name : generateId()
+		id: name ? name : generateID()
 	});
 
-	var header = new fabric.Line([x1, y1 + headerHeight, x2, y1 + headerHeight], {
+	const header = new fabric.Line([x1, y1 + headerHeight, x2, y1 + headerHeight], {
 		fill: '#000',
 		stroke: '#000',
 		strokeWidth: 1,
 		evented: false
 	});
-
-	var label = new fabric.IText(component.id, {
+	const label = new fabric.IText(component.id, {
 		left: left + (width / 2),
 		top: top + 15,
 		fontSize: 24,
@@ -1618,7 +1589,6 @@ function createComponent(x1, y1, x2, y2, name, manual) {
 		lockMovementY: true,
 		selectable: mode === 'select'
 	});
-
 	component.set({label: label, header: header});
 
 	if (name !== 'main') {
@@ -1698,10 +1668,13 @@ function clearAll() {
 
 var main = createComponent(25, 25, container.clientWidth - 25, container.clientHeight - 25, 'main');
 main.set({id: 'main', evented: false});
+buttonClick(document.getElementById("select"));
+updateText();
+resizeCanvas();
+
+// Test
 //createChannel('sync',{x: 100, y: 150},{x: 200, y: 150});
 //createChannel('lossysync',{x: 100, y: 250},{x: 200, y: 250});
 //createChannel('syncdrain',{x: 100, y: 350},{x: 200, y: 350});
 //createChannel('syncspout',{x: 100, y: 450},{x: 200, y: 450});
 //createChannel('fifo1',{x: 100, y: 550},{x: 200, y: 550});
-buttonClick(document.getElementById("select"));
-updateText();

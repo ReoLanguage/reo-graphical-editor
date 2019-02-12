@@ -6,6 +6,7 @@
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<title>Reo Graphical Editor</title>
 </head>
+
 <body>
 <div id="header">
 	<h1>Reo Graphical Editor</h1>
@@ -16,8 +17,8 @@
 		<input id="submit" type="button" value="Submit Code Changes"/><br/>
 		<input id="commentSwitch" type="checkbox" checked><label for="commentSwitch">Show geometry metadata comments</label>
 	</div>
-	<div id="canvas" class="column">
-		<canvas id="c" width="800" height="600">Please use a browser that supports canvas.</canvas>
+	<div id="canvas-container" class="column">
+		<canvas id="canvas" width="800" height="600">Please use a browser that supports canvas.</canvas>
 	</div>
 	<div id="toolbar" class="column">
 		<div class="tool" id="select"><a title="Select"><img src="img/cursor.svg" alt="Select"></a></div>
