@@ -8,7 +8,7 @@ let isProduction = process.env.NODE_ENV === 'production';
 module.exports = {
 	mode: isProduction ? 'production' : 'development',
 	entry: {
-		"app": './src/editor.js'
+		"app": './src/app.js'
 	},
 	output: {
 		filename: '[name].bundle.js',
