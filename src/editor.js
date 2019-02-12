@@ -566,22 +566,20 @@ function createLink(node) {
  * @param {string} properties.class - class attribute of channel
  */
 function loadChannel(properties) {
-	var img = document.createElement("img");
+	let img = document.createElement("img");
 	img.setAttribute("src", "img/" + properties.name + ".svg");
 	img.setAttribute("alt", properties.name);
-	var a = document.createElement("a");
+	let a = document.createElement("a");
 	a.setAttribute("title", properties.name);
 	a.appendChild(img);
-	var span = document.createElement("span");
+	let span = document.createElement("span");
 	span.setAttribute("id", properties.name);
 	span.setAttribute("class", properties.class);
 	span.appendChild(a);
 	span.appendChild(document.createElement("br"));
 	span.appendChild(document.createTextNode(properties.name));
-	document.getElementById("channels").appendChild(span);
-	span.onclick = function () {
-		buttonClick(this)
-	}
+	span.onclick = function () {buttonClick(this)};
+	document.getElementById("channels").appendChild(span)
 }
 
 /**
@@ -796,11 +794,11 @@ function isBoundaryNode(node) {
 }
 
 function updateText() {
-	codeEditor.setValue(components.map(c => c.toReo(document.getElementById('commentSwitch').checked)).join('\n\n'))
+	codeEditor.setValue(components.map(c => c.toReo(document.getElementById('commentSwitch').checked)).join('\n'))
 }
 
 function snapToComponent(node, comp) {
-	var right = comp.left + comp.scaleX * comp.width, bottom = comp.top + comp.scaleY * comp.height, i;
+	const right = comp.left + comp.scaleX * comp.width, bottom = comp.top + comp.scaleY * comp.height;
 	if (node.left > right) // right side
 		node.set('left', right);
 	if (node.left < comp.left) // left side
@@ -813,8 +811,8 @@ function snapToComponent(node, comp) {
 	node.label.set({left: node.left + node.labelOffsetX, top: node.top + node.labelOffsetY});
 	node.label.setCoords();
 	node.label.bringToFront();
-	for (i = 0; i < node.channels.length; ++i)
-		updateChannel(node.channels[i])
+	for (let i = 0; i < node.channels.length; ++i)
+		updateChannel(node.channels[i]);
 	updateText()
 }
 
@@ -1624,24 +1622,11 @@ function createComponent(x1, y1, x2, y2, name, manual) {
 	component.set({label: label, header: header});
 
 	if (name !== 'main') {
-		fabric.Image.fromURL('img/delete.svg', function (img) {
-			var scale = (nodeFactor * 4) / img.height;
-			img.scale(scale).set({
-				left: component.left + 15,
-				top: component.top + 15,
-				class: 'delete',
-				parent: component,
-				hoverCursor: 'pointer'
-			});
-			component.set('delete', img);
-			canvas.add(img)
-		});
-		fabric.Image.fromURL('img/compact.svg', function (img) {
-			var scale = (nodeFactor * 4) / img.height;
-			img.scale(scale).set({
+		const createAnchor = (img, cls) => {
+			img.scale((nodeFactor * 4) / img.height).set({
 				left: component.left + 35,
 				top: component.top + 15,
-				class: 'compactSwitch',
+				class: cls,
 				parent: component,
 				hasControls: false,
 				hasBorders: false,
@@ -1649,25 +1634,13 @@ function createComponent(x1, y1, x2, y2, name, manual) {
 				lockMovementY: true,
 				hoverCursor: 'pointer'
 			});
-			component.set({compactSwitch: img, compact: false});
+			component.set(cls, img);
+			if (cls === 'compactSwitch') component.set('compact', false);
 			canvas.add(img)
-		});
-		fabric.Image.fromURL('img/copy.svg', function (img) {
-			var scale = (nodeFactor * 4) / img.height;
-			img.scale(scale).set({
-				left: component.left + 55,
-				top: component.top + 15,
-				class: 'copy',
-				parent: component,
-				hasControls: false,
-				hasBorders: false,
-				lockMovementX: true,
-				lockMovementY: true,
-				hoverCursor: 'pointer'
-			});
-			component.set('copy', img);
-			canvas.add(img)
-		})
+		};
+		fabric.Image.fromURL('img/delete.svg', img => createAnchor(img, 'delete'));
+		fabric.Image.fromURL('img/compact.svg', img => createAnchor(img, 'compactSwitch'));
+		fabric.Image.fromURL('img/copy.svg', img => createAnchor(img, 'copy'))
 	}
 
 	/*var options = new fabric.Circle({
@@ -1704,7 +1677,7 @@ function createComponent(x1, y1, x2, y2, name, manual) {
 	};
 
 	component.toReo = function (withComment) {
-		return `${this.id}(${this.nodes.filter(n => isBoundaryNode(n)).map(n => n.id).join(', ')}) {${withComment ? this.generatePositionMetadata() : ''}\n${this.channels.map(c => `\t${c.toReo(withComment)}`).join('')}\n${this.components.map(c => `\\t${c.toReo(withComment)}`).join('')}}`
+		return `${this.id}(${this.nodes.filter(n => isBoundaryNode(n)).map(n => n.id).join(', ')}) {${withComment ? this.generatePositionMetadata() : ''}\n${this.channels.map(c => `\t${c.toReo(withComment)}`).join('')}\n${this.components.map(c => `\\t${c.toReo(withComment)}`).join('')}}\n`
 	};
 
 	component.set('index', components.length);
