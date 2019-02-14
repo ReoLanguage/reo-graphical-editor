@@ -1001,7 +1001,7 @@ canvas.on('mouse:down', function (e) {
 				if (p.class && p.class === 'node') {
 					if (p.selection.visible === true) {
 						for (i = 0; i < p.channels.length; ++i)
-							if (p.channels[i].parts[0].fill === splitSelected) {  // FIXME this works even if no channel is selected!
+							if (p.channels[i].parts[0].fill === splitSelected) {
 								splitNode(p);
 								break
 							}
@@ -1021,7 +1021,7 @@ canvas.on('mouse:down', function (e) {
 canvas.on('mouse:move', function (e) {
 	if (!isDown) return;
 
-	const p = canvas.getActiveObject();
+	const p = canvas.getActiveObject() || e.target;
 	if (!p) return;
 
 	const pointer = canvas.getPointer(e.e, false);
@@ -1299,7 +1299,7 @@ function prepareSplit(node) {
 	canvas.requestRenderAll()
 }
 
-function splitNode(source) {  // FIXME works even if no channel is selected!
+function splitNode(source) {
 	let i, otherNode;
 	const destination = createNode(source.left, source.top, null, true);
 	source.parent.nodes.push(destination);
