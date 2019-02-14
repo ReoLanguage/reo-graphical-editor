@@ -22,6 +22,9 @@ module.exports = {
 					compress: {
 						drop_console: true,
 						unsafe: true
+					},
+					mangle: {
+						toplevel: true
 					}
 				}
 			})
