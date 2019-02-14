@@ -15,7 +15,7 @@ module.exports = {
 		path: path.resolve(__dirname, 'public')
 	},
 	node: {module: "empty", net: "empty", fs: "empty"},
-	optimization: isProduction ? {} : {
+	optimization: isProduction ? {
 		minimizer: [
 			new TerserPlugin({
 				terserOptions: {
@@ -26,7 +26,7 @@ module.exports = {
 				}
 			})
 		]
-	},
+	} : {},
 	module: {
 		rules: [{
 			test: /\.css$/,
