@@ -766,7 +766,7 @@ function isBoundaryNode(node) {
 }
 
 function updateText() {
-	codeEditor.setValue(components.map(c => c.toReo(document.getElementById('commentSwitch').checked)).join('\n'))
+	codeEditor.setValue(components.map(c => c.toReoDefinition(document.getElementById('commentSwitch').checked)).join('\n'))
 }
 
 function snapToComponent(node, comp) {
@@ -1650,10 +1650,20 @@ function createComponent(x1, y1, x2, y2, name, manual) {  // FIXME parent compon
 		return ` /*! pos(${this.id}): [${Math.round(this.left)}, ${Math.round(this.top)}, ${Math.round(this.left + this.width)}, ${Math.round(this.top + this.height)}] !*/`
 	};
 
-	component.toReo = function (withComment) {
-		return `${this.id}(${this.nodes.filter(n => isBoundaryNode(n)).map(n => n.id).join(', ')}) {${withComment ? this.generatePositionMetadata() : ''}\n${this.channels.map(c => `\t${c.toReo(withComment)}`).join('')}\n${this.components.map(c => `\\t${c.toReo(withComment)}`).join('')}}\n`
+	component.toReoDefinition = function (withComment) {
+		return `${this.id}(${this.nodes.filter(isBoundaryNode).map(n => n.id).join(', ')}) {\n`
+			// Channels which are inside component
+			+ (this.channels.length > 0 ? '\t//Channels\n' + this.channels.map(c => `\t${c.toReo(withComment)}`).join('') + '\n' : '')
+			// Other component's instances which are inside component  // FIXME pass correct ports to instance creation
+			+ (this.components.length > 0 ? '\t//Components\n' + this.components.map(c => `\t${c.toReoInstance(withComment)}`).join('') : '')
+			+ '}\n'
 	};
 
+	component.toReoInstance = function (withComment) {
+		return `${this.id}(${this.nodes.filter(isBoundaryNode).map(n => n.id).join(', ')})${withComment ? this.generatePositionMetadata() : ''}\n`
+	};
+
+	setParent(component);
 	component.set('index', components.length);
 	components.push(component);
 	canvas.add(component, header, label);
