@@ -583,12 +583,14 @@ function calculateAngle(channel, baseAngle) {
 	return ((angle * 180 / Math.PI) + baseAngle) % 360
 } //calculateAngle
 
-// set the parent property of object p
-// p is either a node, a channel or a component
-// if p is a component, parent should be defined
-function setParent(p, parent) {
+/**
+ * Sets the parent property of object p.
+ * @param p - Either a node, a channel or a component.
+ */
+function setParent(p) {
+	if (!main || p === main) return;
 	let parentArray, i;
-	if (p === main) return;
+
 	// if a parent is set, remove the reference to p from the parent
 	if (p.parent) {
 		switch (p.class) {
@@ -616,6 +618,7 @@ function setParent(p, parent) {
 					components[i].nodes.push(p);
 					break
 				}
+
 			// set a parent for the channels if necessary
 			for (i = 0; i < p.channels.length; ++i)
 				setParent(p.channels[i]);
@@ -628,10 +631,11 @@ function setParent(p, parent) {
 			p.parent.channels.push(p);
 			break;
 		case 'component':
-			if (!parent)
-				throw new Error("Trying to set undefined parent for component");
-			p.parent = parent;
-			parent.components.push(p)
+			for (i = components.length - 1; i >= 0; --i)
+				if (p !== components[i] && p.intersectsWithObject(components[i])) {
+					p.parent = components[i];
+					components[i].components.push(p)
+				}
 	}
 }
 
