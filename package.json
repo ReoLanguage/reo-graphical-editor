@@ -2,8 +2,8 @@
 	"name": "reo-graphical-editor",
 	"version": "0.1.0",
 	"scripts": {
-		"prod:build": "cross-env NODE_ENV=production webpack",
-		"dev:build": "webpack",
+		"build:prod": "cross-env NODE_ENV=production webpack",
+		"build:dev": "webpack",
 		"start": "http-server"
 	},
 	"dependencies": {
