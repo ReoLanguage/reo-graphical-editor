@@ -8,7 +8,7 @@ let channelTypes = require('./channels');
 monaco.languages.register({id: 'reo'});
 monaco.languages.setMonarchTokensProvider('reo', reoIMonarchLanguage.language);
 monaco.languages.setLanguageConfiguration('reo', reoIMonarchLanguage.conf);
-const codeEditor = monaco.editor.create(document.getElementById('text'), {language: 'reo'});  // FIXME not responsive
+const codeEditor = monaco.editor.create(document.getElementById('text'), {language: 'reo'});
 
 async function sourceLoader(fileName) {
 	return new Promise(function (resolve, reject) {
@@ -37,7 +37,7 @@ const canvas = new fabric.Canvas('canvas', {
 });
 const c = document.getElementById("canvas"), container = document.getElementById("canvas-container");
 
-function resizeCanvas() {
+function resizeElements() {
 	c.width = container.clientWidth;
 	c.height = container.clientHeight;
 
@@ -63,9 +63,12 @@ function resizeCanvas() {
 		main.header.setCoords();
 		canvas.requestRenderAll()
 	}
+
+	if (codeEditor)
+		codeEditor.layout()
 }
 
-document.body.onresize = () => resizeCanvas();
+document.body.onresize = () => resizeElements();
 
 let isDown, origX, origY, origLeft, origTop, origRight, origBottom, fromBoundary;
 let mode = 'select';
@@ -154,7 +157,7 @@ document.getElementById("component").onclick = () => buttonClick(document.getEle
  * Exports the canvas to the desired format.
  * @param {String} [format] The format of the output image. Currently supporting "svg" (default), "png" and "treo".
  */
-function download(format) {
+async function download(format) {
 	format = format || 'svg';
 
 	const a = document.createElement('a');
@@ -173,12 +176,12 @@ function download(format) {
 	a.click()
 }
 
-document.getElementById("downloadSVG").onclick = () => download();
-document.getElementById("downloadPNG").onclick = () => download('png');
-document.getElementById("downloadTreo").onclick = () => download('treo');
+document.getElementById("downloadSVG").onclick = async () => download();
+document.getElementById("downloadPNG").onclick = async () => download('png');
+document.getElementById("downloadTreo").onclick = async () => download('treo');
 
 document.getElementById("submit").onclick = async function () {
-	ReoInterpreter.parse(codeEditor.getValue(), listener);  // FIXME code should not be collected from editor (because of the commnet switch)
+	ReoInterpreter.parse(codeEditor.getValue(), listener);  // FIXME code should not be collected from editor (because of the comment switch)
 	try {
 		clearAll();
 		eval(listener.generateCode())
@@ -1684,7 +1687,7 @@ var main = createComponent(25, 25, container.clientWidth - 25, container.clientH
 main.set({id: 'main', evented: false});
 buttonClick(document.getElementById("select"));
 updateText();
-resizeCanvas();
+resizeElements();
 
 // Test
 //createChannel('sync',{x: 100, y: 150},{x: 200, y: 150});
