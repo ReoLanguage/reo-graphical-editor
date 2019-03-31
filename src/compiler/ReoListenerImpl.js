@@ -1,5 +1,3 @@
-// Generated from Reo.g4 by ANTLR 4.7.1
-// jshint ignore: start
 const ReoListener = require('./ReoListener').ReoListener;
 const utils = require('./Utils');
 const parseNumberArray = utils.parseNumberArray, generateShapeDefinition = utils.generateShapeDefinition;
@@ -23,8 +21,8 @@ function ReoListenerImpl(sourceLoader) {
 ReoListenerImpl.prototype = Object.create(ReoListener.prototype);
 ReoListenerImpl.prototype.constructor = ReoListenerImpl;
 
-ReoListenerImpl.prototype.includeSource = async function (filename) {
-	this.extractMetadata(await this.sourceLoader(filename))
+ReoListenerImpl.prototype.includeSource = async function (url) {
+	this.sourceLoader(url, this.extractMetadata)
 };
 
 ReoListenerImpl.prototype.extractMetadata = function (str) {

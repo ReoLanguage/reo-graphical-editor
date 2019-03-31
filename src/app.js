@@ -10,21 +10,22 @@ monaco.languages.setMonarchTokensProvider('reo', reoIMonarchLanguage.language);
 monaco.languages.setLanguageConfiguration('reo', reoIMonarchLanguage.conf);
 const codeEditor = monaco.editor.create(document.getElementById('text'), {language: 'reo'});
 
-async function sourceLoader(fileName) {
-	return new Promise(function (resolve, reject) {
-		let client = new XMLHttpRequest();
-		// tell the client that we do not expect XML as response
-		client.overrideMimeType("text/plain");
-		client.open('GET', fileName);
-		client.onreadystatechange = function () {
-			if (this.readyState === 4)
-				return this.status === 200 ? resolve(this.responseText) : reject(`Error returned with status ${this.status}: ${this.statusText}`)
-		};
-		client.send()
-	})
+async function loadSource(fileName, cb) {
+	let client = new XMLHttpRequest();
+	// tell the client that we do not expect XML as response
+	client.overrideMimeType("text/plain");
+	client.open('GET', fileName);
+	client.onreadystatechange = () => {
+		if (this.readyState === 4) {
+			if (this.status !== 200)
+				throw new Error(`Error returned with status ${this.status}: ${this.statusText}`);
+			cb(this.responseText)
+		}
+	};
+	client.send()
 }
 
-const listener = new ReoInterpreter.ReoListenerImpl(sourceLoader);
+const listener = new ReoInterpreter.ReoListenerImpl(loadSource);
 listener.includeSource('default.treo');
 
 // Initialize graphical editor
