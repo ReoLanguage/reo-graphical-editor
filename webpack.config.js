@@ -31,10 +31,24 @@ module.exports = {
 		]
 	} : {},
 	module: {
-		rules: [{
-			test: /\.css$/,
-			use: ['style-loader', 'css-loader']
-		}]
+		rules: [
+			{
+				test: /\.css$/,
+				use: ['style-loader', 'css-loader']
+			},
+			{
+				test: /\.ttf$/,
+				use: [
+					{
+						loader: 'file-loader',
+						options: {
+							name: '[name].[ext]',
+							outputPath: 'fonts/'
+						}
+					},
+				],
+			},
+		]
 	},
 	plugins: [
 		new MonacoWebpackPlugin({languages: ['reo']})

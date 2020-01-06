@@ -4,22 +4,23 @@
 	"scripts": {
 		"build:prod": "cross-env NODE_ENV=production webpack",
 		"build:dev": "webpack",
-		"start": "http-server"
+		"start": "serve public"
 	},
 	"dependencies": {
-		"monaco-editor": "^0.15.6",
+		"monaco-editor": "^0.19.2",
 		"antlr4": "^4.7.2",
-		"fabric": "^2.6.0",
-		"http-server": "^0.11.1"
+		"fabric": "^3.6.0",
+		"serve": "^11.3.0"
 	},
 	"devDependencies": {
-		"cross-env": "^5.2.0",
-		"monaco-editor-webpack-plugin": "^1.7.0",
-		"css-loader": "^2.1.0",
-		"style-loader": "^0.23.1",
-		"terser-webpack-plugin": "^1.2.2",
-		"webpack": "^4.29.3",
-		"webpack-cli": "^3.2.3"
+		"cross-env": "^6.0.3",
+		"monaco-editor-webpack-plugin": "^1.8.2",
+		"css-loader": "^3.4.1",
+		"file-loader": "^5.0.2",
+		"style-loader": "^1.1.2",
+		"terser-webpack-plugin": "^2.3.1",
+		"webpack": "^4.41.5",
+		"webpack-cli": "^3.3.10"
 	},
 	"repository": {
 		"type": "git",
