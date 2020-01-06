@@ -1,5 +1,6 @@
 .idea/
 node_modules/
 *.log
-*.bundle.js
+*.bundle.js*
 editor.worker.js
+public/fonts/
