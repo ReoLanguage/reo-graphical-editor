@@ -2,24 +2,25 @@
 	"name": "reo-graphical-editor",
 	"version": "0.1.0",
 	"scripts": {
-		"build:prod": "cross-env NODE_ENV=production webpack",
 		"build:dev": "webpack",
-		"start": "serve public"
+		"build:prod": "cross-env NODE_ENV=production webpack",
+		"start": "serve public",
+		"clean": "rm -f public/app.bundle.js public/editor.worker.js"
 	},
 	"dependencies": {
-		"monaco-editor": "^0.19.2",
-		"antlr4": "^4.7.2",
 		"fabric": "^3.6.0",
+		"antlr4": "^4.7.2",
+		"monaco-editor": "^0.19.2",
 		"serve": "^11.3.0"
 	},
 	"devDependencies": {
 		"cross-env": "^6.0.3",
-		"monaco-editor-webpack-plugin": "^1.8.2",
+		"webpack": "^4.41.5",
 		"css-loader": "^3.4.1",
 		"file-loader": "^5.0.2",
 		"style-loader": "^1.1.2",
+		"monaco-editor-webpack-plugin": "^1.8.2",
 		"terser-webpack-plugin": "^2.3.1",
-		"webpack": "^4.41.5",
 		"webpack-cli": "^3.3.10"
 	},
 	"repository": {
