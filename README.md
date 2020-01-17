@@ -4,9 +4,9 @@ Web-based graphical editor for Reo language
 ## Build
 
 ### Prerequisites
-* NodeJS
+* [NodeJS](https://nodejs.org)
 
-Note: The editor is not compatible with Internet Explorer.
+Note: Internet Explorer is not supported.
 
 ### Installing required NodeJS packages
 Open a terminal in project's root directory and run command:
@@ -32,7 +32,7 @@ After building the project, run command:
 ```console
 $ npm start
 ```
-Then go to localhost:8080 and have fun!
+Then visit http://localhost:8080 and have fun!
 
 ## Origin
 This repository is in continuation of the original project developed by [@maarten1001](https://github.com/maarten1001).
