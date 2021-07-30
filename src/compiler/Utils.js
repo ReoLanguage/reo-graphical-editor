@@ -1,8 +1,3 @@
-module.exports = {
-	parseNumberArray: parseNumberArray,
-	generateShapeDefinition: generateShapeDefinition
-};
-
 function solveExpression(expr, env) {
 	let execstr = "";
 	for (let sym in env)
@@ -14,7 +9,7 @@ function parseNumber(expr, env) {
 	return typeof expr === 'number' ? expr : solveExpression(expr, env)
 }
 
-function parseNumberArray(arr, env) {
+export function parseNumberArray(arr, env) {
 	for (let i = 0; i < arr.length; ++i)
 		arr[i] = parseNumber(arr[i], env);
 	return arr
@@ -34,7 +29,7 @@ ReoComponentAtom.prototype.define = function () {
 	let argList = '', argmap = {};
 	for (let i = 0; i < this.args.length; ++i) {
 		argList += 'pos' + (i + 1) + ',';
-		argmap['pos' + this.args[i]] = i + 1;
+		argmap['pathto' + this.args[i]] = i + 1;
 	}
 	let jsSrc = this.shape;
 	for (let k in argmap)
@@ -47,6 +42,6 @@ ReoComponentAtom.prototype.draw = function (ports, nodes) {
 	return `draw${this.name}(${ports.map(port => '{x:' + nodes[port][0] + ',y:' + nodes[port][1] + ',name:"' + port + '"}').join(',')})`
 };
 
-function generateShapeDefinition(name, args, shape) {
+export function generateShapeDefinition(name, args, shape) {
 	return new ReoComponentAtom(name, args, shape);
 }

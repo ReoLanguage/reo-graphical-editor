@@ -14,7 +14,7 @@ module.exports = {
 		filename: '[name].bundle.js',
 		path: path.resolve(__dirname, 'public')
 	},
-	node: {module: "empty", net: "empty", fs: "empty"},
+	resolve: {fallback: {module: false, net: false, fs: false}},
 	optimization: isProduction ? {
 		minimizer: [
 			new TerserPlugin({

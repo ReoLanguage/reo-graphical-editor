@@ -1,8 +1,8 @@
-const monaco = require('monaco-editor/esm/vs/editor/editor.api');
-const fabric = require('fabric').fabric;
-const reoIMonarchLanguage = require('./reo/reo');
-const ReoInterpreter = require('./compiler');
-let channelTypes = require('./channels');
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import { fabric } from 'fabric';
+import reoIMonarchLanguage from './reo/reo';
+import * as ReoInterpreter from './compiler';
+import channelTypes from './channels';
 
 // Initialize code editor
 monaco.languages.register({id: 'reo'});
@@ -11,18 +11,11 @@ monaco.languages.setLanguageConfiguration('reo', reoIMonarchLanguage.conf);
 const codeEditor = monaco.editor.create(document.getElementById('text'), {language: 'reo'});
 
 async function loadSource(fileName, cb) {
-	let client = new XMLHttpRequest();
-	// tell the client that we do not expect XML as response
-	client.overrideMimeType("text/plain");
-	client.open('GET', fileName);
-	client.onreadystatechange = () => {
-		if (this.readyState === 4) {
-			if (this.status !== 200)
-				throw new Error(`Error returned with status ${this.status}: ${this.statusText}`);
-			cb(this.responseText)
-		}
-	};
-	client.send()
+	fetch(fileName).then(response => {
+		if (!response.ok)
+			throw new Error(`Error returned with status ${response.status}: ${response.statusText}`);
+		return response.text()
+	}).then(data => cb(data))
 }
 
 const listener = new ReoInterpreter.ReoListenerImpl(loadSource);
@@ -79,32 +72,32 @@ let nodes = [], channels = [], components = [];
 loadChannels();
 
 // drawing parameters
-nodeFillColourSource = '#fff';
-nodeFillColourSink = '#fff';
-nodeFillColourMixed = '#000';
-nodeFactor = 4;
+const nodeFillColourSource = '#fff',
+	nodeFillColourSink = '#fff',
+	nodeFillColourMixed = '#000',
+	nodeFactor = 4,
 
-lineFillColour = '#000';
-lineStrokeColour = '#000';
-lineStrokeWidth = 1;
+	lineFillColour = '#000',
+	lineStrokeColour = '#000',
+	lineStrokeWidth = 1,
 
-arrowFactor = 8;
-arrowOffsetOut = lineStrokeWidth * nodeFactor + 4;
-arrowOffsetIn = arrowOffsetOut + arrowFactor;
+	arrowFactor = 8,
+	arrowOffsetOut = lineStrokeWidth * nodeFactor + 4,
+	arrowOffsetIn = arrowOffsetOut + arrowFactor,
 
-fifoHeight = 30;
-fifoWidth = 10;
-fifoFillColour = '#fff';
+	fifoHeight = 30,
+	fifoWidth = 10,
+	fifoFillColour = '#fff',
 
-buttonBorderOff = '0.5vmin solid white';
-buttonBorderOn = '0.5vmin solid black';
+	buttonBorderOff = '0.5vmin solid white',
+	buttonBorderOn = '0.5vmin solid black',
 
-mergeDistance = 20;
-headerHeight = 30;
-loopRadius = 25;
+	mergeDistance = 20,
+	headerHeight = 30,
+	loopRadius = 25,
 
-splitSelected = 'lightgreen';
-splitDeselected = 'lightblue';
+	splitSelected = 'lightgreen',
+	splitDeselected = 'lightblue';
 
 function buttonClick(button) {
 	let i;
@@ -187,7 +180,8 @@ document.getElementById("submit").onclick = async function () {
 		clearAll();
 		eval(listener.generateCode())
 	} catch (e) {
-		alert(e)
+		alert(e);
+		console.log(e)
 	}
 };
 

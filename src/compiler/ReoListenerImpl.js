@@ -1,48 +1,47 @@
-const ReoListener = require('./ReoListener').ReoListener;
-const utils = require('./Utils');
-const parseNumberArray = utils.parseNumberArray, generateShapeDefinition = utils.generateShapeDefinition;
-module.exports.ReoListenerImpl = ReoListenerImpl;
+import ReoListener from './ReoListener';
+import {
+	parseNumberArray,
+	generateShapeDefinition,
+} from './Utils';
 
 
 // This class defines a complete listener for a parse tree produced by ReoParser.
-function ReoListenerImpl(sourceLoader) {
-	ReoListener.call(this);
-	this.sourceLoader = sourceLoader;
-	this.componentDefinitions = {};
-	// this.imports = new Set();
-	// this.sections = {};
-	this.componentNames = {};
-	// this.components = {};
-	this.ports = {};
-	this.cachedCode = "";
-	return this
-}
+export default class ReoListenerImpl extends ReoListener {
+	constructor(sourceLoader) {
+		super();
+		this.sourceLoader = sourceLoader;
+		this.componentDefinitions = {};
+		// this.imports = new Set();
+		// this.sections = {};
+		this.componentNames = {};
+		// this.components = {};
+		this.ports = {};
+		this.cachedCode = "";
+	}
 
-ReoListenerImpl.prototype = Object.create(ReoListener.prototype);
-ReoListenerImpl.prototype.constructor = ReoListenerImpl;
+	async includeSource(url) {
+		this.sourceLoader(url, this.extractMetadata)
+	}
 
-ReoListenerImpl.prototype.includeSource = async function (url) {
-	this.sourceLoader(url, this.extractMetadata)
-};
+	extractMetadata = (str) => {
+		let m2 = /^\s*\/\*!(.*?)!\*\//g.exec(str.replace(/[\n\r]/g, ''));
+		if (m2) {
+			let mstr = m2[1].trim();
+			// convert back to json
+			// convert block type to json valid string, replace : with ` because regex isn't powerful enough for this
+			mstr = mstr.replace(/{(({(({(({.*?}|.)*?)}|.)*?)}|.)*?)}/g, (m, a, s) => JSON.stringify(a.replace(/:/g, '`')));
+			// stringify keys, replace ` back for :
+			let fixedstr = "{" + mstr.replace(/([a-z][^\s,()]*|[a-z]+\(.*?\)):/g, '"$1":').replace(/`/g, ':') + "}";
 
-ReoListenerImpl.prototype.extractMetadata = function (str) {
-	let m2 = /^\s*\/\*!(.*?)!\*\//g.exec(str.replace(/[\n\r]/g, ''));
-	if (m2) {
-		let mstr = m2[1].trim();
-		// convert back to json
-		// convert block type to json valid string, replace : with ` because regex isn't powerful enough for this
-		mstr = mstr.replace(/{(({(({(({.*?}|.)*?)}|.)*?)}|.)*?)}/g, (m, a, s) => JSON.stringify(a.replace(/:/g, '`')));
-		// stringify keys, replace ` back for :
-		let fixedstr = "{" + mstr.replace(/([a-z][^\s,()]*|[a-z]+\(.*?\)):/g, '"$1":').replace(/`/g, ':') + "}";
-
-		let mdata = JSON.parse(fixedstr);
-		for (let metakey in mdata) {
-			let m3 = /^(\w+)(\((.*?)\))?$/g.exec(metakey);
-			if (!m3) throw 'failed to parse meta key';
-			this.processMetadata({key: m3[1], keyarg: m3[3], value: mdata[metakey]})
+			let mdata = JSON.parse(fixedstr);
+			for (let metakey in mdata) {
+				let m3 = /^(\w+)(\((.*?)\))?$/g.exec(metakey);
+				if (!m3) throw 'failed to parse meta key';
+				this.processMetadata({key: m3[1], keyarg: m3[3], value: mdata[metakey]})
+			}
 		}
 	}
-};
+}
 
 ReoListenerImpl.prototype.processMetadata = function (s, env) {
 	switch (s.key) {

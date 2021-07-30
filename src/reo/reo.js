@@ -1,4 +1,4 @@
-module.exports = {
+const reoIMonarchLanguage = {
 	conf:
 		{
 			wordPattern: /(-?\d*\.\d\w*)|([^`~!#%^&*()\-=+\[{\]}\\|;:'",.<>\/?\s]+)/g, comments:
@@ -54,3 +54,5 @@ module.exports = {
 		}
 	}
 };
+
+export default reoIMonarchLanguage;

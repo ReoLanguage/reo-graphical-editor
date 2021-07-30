@@ -1,4 +1,4 @@
-module.exports = [
+const channelTypes = [
 	{
 		class: "channel",
 		name: "sync",
@@ -724,3 +724,5 @@ module.exports = [
 		]
 	}
 ];
+
+export default channelTypes;
