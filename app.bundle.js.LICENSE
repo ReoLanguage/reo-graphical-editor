@@ -1,12 +1,7 @@
-/*! https://mths.be/codepointat v0.2.0 by @mathias */
-
-/*! https://mths.be/fromcodepoint v0.2.1 by @mathias */
+/*! @license DOMPurify 2.3.1 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/2.3.1/LICENSE */
 
 /*! Fabric.js Copyright 2008-2015, Printio (Juriy Zaytsev, Maxim Chernyak) */
 
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <http://feross.org>
- * @license  MIT
- */
+/*! https://mths.be/codepointat v0.2.0 by @mathias */
+
+/*! https://mths.be/fromcodepoint v0.2.1 by @mathias */
