@@ -852,6 +852,8 @@ canvas.on('mouse:up', function () {
 });
 
 canvas.on('selection:created', function (e) {
+	if (!e.target)
+		return
 	if (e.target.delete)
 		e.target.delete.set('visible', true);
 	if (e.target.split)

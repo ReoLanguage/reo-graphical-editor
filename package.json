@@ -8,9 +8,9 @@
 		"clean": "rm -f public/app.bundle.js public/editor.worker.js"
 	},
 	"dependencies": {
-		"fabric": "^4.6.0",
+		"fabric": "^5.1.0",
 		"antlr4": "^4.9.3",
-		"monaco-editor": "^0.31.1"
+		"monaco-editor": "^0.34.1"
 	},
 	"devDependencies": {
 		"cross-env": "^7.0.3",
@@ -20,8 +20,8 @@
 		"style-loader": "^3.3.1",
 		"monaco-editor-webpack-plugin": "^7.0.1",
 		"terser-webpack-plugin": "^5.3.0",
-		"webpack-cli": "^4.9.1",
-		"serve": "^13.0.2"
+		"webpack-cli": "^5.0.1",
+		"serve": "^14.1.2"
 	},
 	"repository": {
 		"type": "git",
