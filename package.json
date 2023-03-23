@@ -10,7 +10,7 @@
 	"dependencies": {
 		"fabric": "^5.1.0",
 		"antlr4": "^4.9.3",
-		"monaco-editor": "^0.34.1"
+		"monaco-editor": "^0.36.1"
 	},
 	"devDependencies": {
 		"cross-env": "^7.0.3",
